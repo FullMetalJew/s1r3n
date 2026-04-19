@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S1-R3N — Scout 3</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* Matrix green dark (default) */
+    --bg-page:  #010d03;
+    --bg-card:  #040f06;
+    --bg-raise: #071409;
+    --bg-hover: #0a1e0d;
+
+    --border:    rgba(0, 255, 65, 0.10);
+    --border-md: rgba(0, 255, 65, 0.22);
+
+    --text-primary:   #c8ffd4;
+    --text-secondary: #6bbf7a;
+    --text-muted:     #2d5e38;
+
+    --accent:      #00ff41;
+    --accent-dim:  rgba(0, 255, 65, 0.12);
+    --accent-glow: 0 0 10px rgba(0, 255, 65, 0.25);
+
+    /* pill colors — all green-matrix tinted */
+    --green-bg:    rgba(0,255,65,0.10);  --green-text:  #00ff41; --green-border: rgba(0,255,65,0.3);
+    --teal-bg:     rgba(0,200,150,0.10); --teal-text:   #00e0a0; --teal-border:  rgba(0,200,150,0.3);
+    --amber-bg:    rgba(180,255,100,0.10);--amber-text:  #aaff44;--amber-border: rgba(180,255,100,0.3);
+    --coral-bg:    rgba(255,100,80,0.10);--coral-text:  #ff6655; --coral-border: rgba(255,100,80,0.3);
+    --blue-bg:     rgba(80,200,255,0.10);--blue-text:   #44ddff; --blue-border:  rgba(80,200,255,0.3);
+    --purple-bg:   rgba(180,100,255,0.10);--purple-text:#cc88ff; --purple-border:rgba(180,100,255,0.3);
+
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    --font: 'Rajdhani', sans-serif;
+    --mono: 'Share Tech Mono', monospace;
+
+    --shadow-card: 0 1px 4px rgba(0,255,65,0.05), 0 0 0 0.5px rgba(0,255,65,0.08);
+    --shadow-lift: 0 4px 20px rgba(0,255,65,0.10), 0 0 0 0.5px rgba(0,255,65,0.15);
+  }
+
+  body.light {
+    --bg-page:  #f0faf2;
+    --bg-card:  #ffffff;
+    --bg-raise: #e8f5eb;
+    --bg-hover: #ddf0e1;
+
+    --border:    rgba(0,150,40,0.12);
+    --border-md: rgba(0,150,40,0.22);
+
+    --text-primary:   #0a2e10;
+    --text-secondary: #1a5e28;
+    --text-muted:     #4a8e58;
+
+    --accent:      #008820;
+    --accent-dim:  rgba(0,136,32,0.10);
+    --accent-glow: 0 0 8px rgba(0,136,32,0.15);
+
+    --green-bg:    rgba(0,136,32,0.10);  --green-text:  #006618; --green-border: rgba(0,136,32,0.3);
+    --teal-bg:     rgba(0,140,100,0.10); --teal-text:   #005538; --teal-border:  rgba(0,140,100,0.3);
+    --amber-bg:    rgba(100,160,0,0.10); --amber-text:  #456600; --amber-border: rgba(100,160,0,0.3);
+    --coral-bg:    rgba(200,60,40,0.10); --coral-text:  #882010; --coral-border: rgba(200,60,40,0.3);
+    --blue-bg:     rgba(0,120,200,0.10); --blue-text:   #004488; --blue-border:  rgba(0,120,200,0.3);
+    --purple-bg:   rgba(120,40,200,0.10);--purple-text: #5500aa; --purple-border:rgba(120,40,200,0.3);
+
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lift: 0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  /* scanline overlay in dark mode */
+  body:not(.light)::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 65, 0.015) 2px,
+      rgba(0, 255, 65, 0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* ─── THEME TOGGLE ─── */
+  .theme-toggle {
+    position: fixed;
+    top: 16px; right: 16px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-md);
+    border-radius: 99px;
+    padding: 6px 12px 6px 8px;
+    box-shadow: var(--shadow-lift);
+    cursor: pointer;
+    transition: background 0.2s;
+    user-select: none;
+    font-family: var(--mono);
+  }
+
+  .theme-toggle:hover { background: var(--bg-raise); }
+
+  .toggle-track {
+    width: 32px; height: 18px;
+    border-radius: 99px;
+    background: var(--border-md);
+    position: relative;
+    transition: background 0.25s;
+    flex-shrink: 0;
+  }
+
+  body:not(.light) .toggle-track { background: var(--accent); box-shadow: var(--accent-glow); }
+
+  .toggle-thumb {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+    top: 2px; left: 2px;
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  body:not(.light) .toggle-thumb { transform: translateX(14px); }
+
+  .toggle-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: var(--mono);
+  }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    transition: background 0.25s, border-color 0.25s;
+  }
+
+  .card-header {
+    padding: 9px 16px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--bg-raise);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0.85;
+  }
+
+  .card-header::before {
+    content: '>';
+    color: var(--accent);
+    font-size: 12px;
+    opacity: 0.7;
+  }
+
+  /* ─── HEADER CARD ─── */
+  .header-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-md);
+    box-shadow: var(--shadow-lift);
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 16px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.3;
+  }
+
+  .avatar {
+    width: 58px; height: 58px;
+    border-radius: var(--radius-md);
+    background: var(--accent-dim);
+    border: 1px solid var(--border-md);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    flex-shrink: 0;
+    letter-spacing: 0.05em;
+    box-shadow: var(--accent-glow);
+  }
+
+  .header-name {
+    font-family: var(--mono);
+    font-size: 26px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+    text-shadow: 0 0 20px rgba(0,255,65,0.4);
+  }
+
+  body.light .header-name { text-shadow: none; }
+
+  .header-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: var(--mono);
+    letter-spacing: 0.06em;
+  }
+
+  .form-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-end;
+  }
+
+  /* ─── DROID ALERT BANNER ─── */
+  .droid-banner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 16px;
+    background: var(--bg-raise);
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+
+  .droid-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-right: 4px;
+  }
+
+  /* ─── PILLS ─── */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+  }
+
+  .pill-green  { background: var(--green-bg);  color: var(--green-text);  border: 1px solid var(--green-border); }
+  .pill-teal   { background: var(--teal-bg);   color: var(--teal-text);   border: 1px solid var(--teal-border); }
+  .pill-amber  { background: var(--amber-bg);  color: var(--amber-text);  border: 1px solid var(--amber-border); }
+  .pill-coral  { background: var(--coral-bg);  color: var(--coral-text);  border: 1px solid var(--coral-border); }
+  .pill-blue   { background: var(--blue-bg);   color: var(--blue-text);   border: 1px solid var(--blue-border); }
+  .pill-purple { background: var(--purple-bg); color: var(--purple-text); border: 1px solid var(--purple-border); }
+  .pill-warn   { background: rgba(255,60,40,0.12); color: #ff5544; border: 1px solid rgba(255,60,40,0.3); }
+  .pill-resist { background: rgba(0,200,255,0.08); color: var(--blue-text); border: 1px solid var(--blue-border); }
+  .pill-immune { background: rgba(0,255,65,0.08);  color: var(--green-text); border: 1px solid var(--green-border); }
+
+  /* ─── INTRO ─── */
+  .intro-body {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .intro-p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    font-weight: 400;
+  }
+
+  .intro-p strong { color: var(--text-primary); font-weight: 600; }
+
+  .tip-box {
+    background: var(--accent-dim);
+    border: 1px solid var(--border-md);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    padding: 12px 14px;
+  }
+
+  .tip-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 5px;
+    opacity: 0.8;
+  }
+
+  .tip-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+
+  /* ─── STATS ─── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .stat {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .stat:hover { background: var(--bg-hover); }
+  .stat:nth-child(3n) { border-right: none; }
+  .stat:nth-last-child(-n+3) { border-bottom: none; }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 20px;
+    color: var(--text-primary);
+  }
+
+  .stat-value.hl {
+    color: var(--accent);
+    text-shadow: 0 0 8px rgba(0,255,65,0.3);
+  }
+
+  body.light .stat-value.hl { text-shadow: none; }
+
+  /* ─── WEAPONS ─── */
+  .weapons-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .weapon-card {
+    padding: 13px 16px;
+    border-right: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .weapon-card:last-child { border-right: none; }
+  .weapon-card:hover { background: var(--bg-hover); }
+
+  .weapon-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .weapon-stat {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ─── ECONOMY ─── */
+  .economy-row {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .economy-row:last-child { border-bottom: none; }
+
+  .econ-type {
+    padding: 11px 14px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--bg-raise);
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    padding-top: 13px;
+  }
+
+  .econ-options {
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .econ-sep { color: var(--text-muted); font-size: 12px; margin: 0 2px; }
+
+  /* ─── FEATURE BLOCKS ─── */
+  .feature-block {
+    padding: 15px 18px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .feature-block:hover { background: var(--bg-hover); }
+  .feature-block:last-child { border-bottom: none; }
+
+  .feature-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+  }
+
+  .feature-name {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-primary);
+    letter-spacing: 0.04em;
+  }
+
+  .feature-flavor {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 8px;
+  }
+
+  .feature-rule {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    padding: 7px 12px;
+    border-left: 1.5px solid var(--border-md);
+    margin-bottom: 6px;
+    background: var(--bg-raise);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
+
+  .feature-tip {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  .feature-tip::before { content: '// '; color: var(--accent); opacity: 0.5; }
+
+  /* ─── TECH POWERS ─── */
+  .powers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .power-card {
+    padding: 13px 16px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+
+  .power-card:hover { background: var(--bg-hover); }
+  .power-card:nth-child(2n) { border-right: none; }
+  .power-card:nth-last-child(-n+2) { border-bottom: none; }
+
+  .power-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+
+  .power-meta { display: flex; gap: 4px; flex-wrap: wrap; }
+
+  .power-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-raise);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .power-desc {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ─── COMBOS ─── */
+  .combo-block {
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .combo-block:hover { background: var(--bg-hover); }
+  .combo-block:last-child { border-bottom: none; }
+
+  .combo-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+    opacity: 0.8;
+  }
+
+  .combo-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .combo-step {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    background: var(--bg-raise);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 3px 10px;
+    color: var(--text-primary);
+  }
+
+  .combo-arrow { color: var(--accent); font-size: 14px; opacity: 0.5; }
+
+  /* ─── FOOTER ─── */
+  .fp-note {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 10px 18px;
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.04em;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 620px) {
+    .header-card { grid-template-columns: auto 1fr; }
+    .form-badges { display: none; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .stat:nth-child(3n) { border-right: 1px solid var(--border); }
+    .stat:nth-child(2n) { border-right: none; }
+    .weapons-grid { grid-template-columns: 1fr; }
+    .weapon-card { border-right: none; border-bottom: 1px solid var(--border); }
+    .weapon-card:last-child { border-bottom: none; }
+    .powers-grid { grid-template-columns: 1fr; }
+    .power-card { border-right: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOGGLE -->
+<div class="theme-toggle" id="themeToggle">
+  <span id="toggleIcon">◉</span>
+  <div class="toggle-track"><div class="toggle-thumb"></div></div>
+  <span class="toggle-label" id="toggleLabel">DARK</span>
+</div>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header-card">
+    <div class="avatar">S1-R3N</div>
+    <div>
+      <div class="header-name">S1-R3N</div>
+      <div class="header-sub">CLASS IV DROID &nbsp;·&nbsp; SCOUT 3 &nbsp;·&nbsp; INDEPENDENT DROID &nbsp;·&nbsp; DEADEYE TECHNIQUE &nbsp;·&nbsp; INT CASTER</div>
+    </div>
+    <div class="form-badges">
+      <span class="pill pill-green">Deadeye</span>
+      <span class="pill pill-teal">Sharpshooter</span>
+      <span class="pill pill-blue">Techcasting</span>
+    </div>
+  </div>
+
+  <!-- DROID STATUS -->
+  <div class="card">
+    <div class="card-header">Droid Systems — Passive Traits</div>
+    <div class="droid-banner">
+      <span class="droid-label">Resist:</span>
+      <span class="pill pill-resist">Necrotic</span>
+      <span class="pill pill-resist">Poison</span>
+      <span class="pill pill-resist">Psychic</span>
+      <span class="droid-label" style="margin-left:8px">Immune:</span>
+      <span class="pill pill-immune">Poisoned</span>
+      <span class="pill pill-immune">Diseased</span>
+      <span class="droid-label" style="margin-left:8px">Vulnerable:</span>
+      <span class="pill pill-warn">Ion</span>
+      <span class="droid-label" style="margin-left:8px">Bonus:</span>
+      <span class="pill pill-green">Rapid Reconstruction</span>
+    </div>
+  </div>
+
+  <!-- HOW TO PLAY -->
+  <div class="card">
+    <div class="card-header">How to play S1-R3N — the simple version</div>
+    <div class="intro-body">
+      <p class="intro-p">S1-R3N is a <strong>precision striker and intelligence asset</strong>. She doesn't get in melee — she finds high ground, marks a target, and eliminates it before it knows she's there. As a droid she feels no fear, no poison, no disease. She is the definition of a <strong>calculated threat</strong>.</p>
+      <p class="intro-p">Every turn revolves around one question: <strong>is my quarry marked?</strong> Ranger's Quarry adds bonus damage every turn — keep it active. Deadeye Superiority lets her spend superiority dice to <strong>punish misses and boost crits</strong>. Her INT of +3 drives both her Tech powers and her massive skill bonus stack.</p>
+      <div class="tip-box">
+        <div class="tip-title">// COMBAT PROTOCOL</div>
+        <div class="tip-text">Mark your quarry (reaction, free). Stay at range — 30-60ft ideal. Attack with the Blaster Rifle every turn. Use Sharpshooter's Routine on bonus action for extra pressure. Spend Deadeye Superiority dice to punish key moments. Tech powers are utility — save them for the right situation.</div>
+      </div>
+      <p class="intro-p">Watch out for <strong>Ion damage</strong> — it hits her twice as hard as anyone else. Stay out of melee, avoid Ion grenades and Ion weapons. If you're getting rushed, use <strong>Rapid Reconstruction</strong> as an action to spend a Hit Die and patch yourself up mid-fight. You don't need a healer — you are partially self-sufficient.</p>
+      <p class="intro-p"><strong>Tech Points</strong> fuel your powers — 6 total, refreshing on short rest. Unlike Force Points they come back fast. Spend them more freely than a Force caster would, but don't blow them all before a boss fight.</p>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="card">
+    <div class="card-header">Key Stats</div>
+    <div class="stat-grid">
+      <div class="stat"><span class="stat-label">Hit Points</span><span class="stat-value">26 max</span></div>
+      <div class="stat"><span class="stat-label">Tech Points</span><span class="stat-value hl">6 max</span></div>
+      <div class="stat"><span class="stat-label">Tech Save DC</span><span class="stat-value hl">13</span></div>
+      <div class="stat"><span class="stat-label">Tech Atk Bonus</span><span class="stat-value hl">+5</span></div>
+      <div class="stat"><span class="stat-label">Initiative</span><span class="stat-value">+3</span></div>
+      <div class="stat"><span class="stat-label">Proficiency</span><span class="stat-value">+2</span></div>
+      <div class="stat"><span class="stat-label">Armor Class</span><span class="stat-value hl">14</span></div>
+      <div class="stat"><span class="stat-label">Speed</span><span class="stat-value">15 ft</span></div>
+      <div class="stat"><span class="stat-label">Sup. Dice</span><span class="stat-value">1/2 SR</span></div>
+    </div>
+  </div>
+
+  <!-- WEAPONS -->
+  <div class="card">
+    <div class="card-header">Weapons</div>
+    <div class="weapons-grid">
+      <div class="weapon-card">
+        <div class="weapon-name">Blaster Rifle [PRIMARY]</div>
+        <div class="weapon-stat">Attack +5 &nbsp;·&nbsp; 1d8+3 energy<br>Range 100/400ft &nbsp;·&nbsp; Martial Blaster</div>
+      </div>
+      <div class="weapon-card">
+        <div class="weapon-name">Hold-out</div>
+        <div class="weapon-stat">Attack +5 &nbsp;·&nbsp; 1d4+3 energy<br>Range 30/120ft &nbsp;·&nbsp; Simple Blaster</div>
+      </div>
+      <div class="weapon-card">
+        <div class="weapon-name">Vibrodagger ×2</div>
+        <div class="weapon-stat">Attack +5 &nbsp;·&nbsp; 1d4+3 kinetic<br>Melee 5ft &nbsp;·&nbsp; Last resort only</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTION ECONOMY -->
+  <div class="card">
+    <div class="card-header">Action Economy</div>
+    <div class="economy-row">
+      <div class="econ-type">Action</div>
+      <div class="econ-options">Attack <span class="econ-sep">·</span> Cast tech power <span class="econ-sep">·</span> Dash <span class="econ-sep">·</span> Dodge <span class="econ-sep">·</span> Disengage <span class="econ-sep">·</span> <span class="pill pill-blue">Rapid Reconstruction (HD)</span></div>
+    </div>
+    <div class="economy-row">
+      <div class="econ-type">Bonus</div>
+      <div class="econ-options"><span class="pill pill-green">Sharpshooter's Routine</span> <span class="econ-sep">·</span> <span class="pill pill-amber">Sharpshooter Style</span></div>
+    </div>
+    <div class="economy-row">
+      <div class="econ-type">Reaction</div>
+      <div class="econ-options"><span class="pill pill-teal">Ranger's Quarry (free)</span> <span class="econ-sep">·</span> <span class="pill pill-coral">Deadeye Superiority</span> <span class="econ-sep">·</span> Opportunity attacks</div>
+    </div>
+    <div class="economy-row">
+      <div class="econ-type">Free</div>
+      <div class="econ-options">Speak <span class="econ-sep">·</span> Drop item <span class="econ-sep">·</span> Minor interactions</div>
+    </div>
+  </div>
+
+  <!-- KEY FEATURES -->
+  <div class="card">
+    <div class="card-header">Key Class Features</div>
+
+    <div class="feature-block">
+      <div class="feature-title">
+        <span class="pill pill-teal">Reaction</span>
+        <span class="feature-name">Ranger's Quarry</span>
+      </div>
+      <div class="feature-flavor">Mark a target — your bullets hit harder</div>
+      <div class="feature-rule">Once per turn as a reaction: choose a creature you can see. Until you use this again or the target dies, add <strong>1d6 bonus damage</strong> once per turn when you hit it with a weapon attack. Also grants advantage on Perception and Survival to track the quarry.</div>
+      <div class="feature-tip">Keep this active every single fight — it's free and adds up fast</div>
+    </div>
+
+    <div class="feature-block">
+      <div class="feature-title">
+        <span class="pill pill-coral">Special</span>
+        <span class="feature-name">Deadeye Superiority — 1/2 per Short Rest</span>
+      </div>
+      <div class="feature-flavor">Superiority dice that punish and reward precision</div>
+      <div class="feature-rule"><strong>Mark of the Deadeye:</strong> When you score a critical hit or reduce a target to 0 HP, regain 1 superiority die.</div>
+      <div class="feature-rule"><strong>Sharpshooter's Routine (BA):</strong> Expend 1 superiority die — make one ranged weapon attack as a bonus action. Add the die to the damage roll on a hit.</div>
+      <div class="feature-tip">Use Sharpshooter's Routine when quarry is marked for massive single-turn burst</div>
+    </div>
+
+    <div class="feature-block">
+      <div class="feature-title">
+        <span class="pill pill-amber">Bonus Action</span>
+        <span class="feature-name">Sharpshooter Style</span>
+      </div>
+      <div class="feature-flavor">Ignore cover, ignore range penalties</div>
+      <div class="feature-rule">Your ranged weapon attacks ignore half and three-quarters cover. You do not suffer disadvantage for long-range attacks. When you score a critical hit with a ranged weapon, you can roll one additional damage die.</div>
+      <div class="feature-tip">Never worry about cover or distance — shoot from anywhere</div>
+    </div>
+
+    <div class="feature-block">
+      <div class="feature-title">
+        <span class="pill pill-blue">Action</span>
+        <span class="feature-name">Rapid Reconstruction</span>
+      </div>
+      <div class="feature-flavor">Built-in self-repair — no medpac needed</div>
+      <div class="feature-rule">As an action, spend one Hit Die to recover HP. Roll the die and add your CON modifier. You regain that many HP. Can be used mid-combat to stay in the fight without relying on allies.</div>
+      <div class="feature-tip">Use at 30-40% HP — don't wait until you're critical</div>
+    </div>
+
+    <div class="feature-block">
+      <div class="feature-title">
+        <span class="pill pill-green">Passive</span>
+        <span class="feature-name">Pathfinder</span>
+      </div>
+      <div class="feature-flavor">The jungle of Rakata Prime is your ally</div>
+      <div class="feature-rule">You ignore difficult terrain caused by natural environments. You can move through difficult terrain without spending extra movement. You also have advantage on checks to navigate or track in wilderness environments.</div>
+      <div class="feature-tip">On Rakata Prime this is huge — dense jungle slows everyone else, not you</div>
+    </div>
+
+  </div>
+
+  <!-- TECH POWERS -->
+  <div class="card">
+    <div class="card-header">Techcasting — DC 13 · Attack +5 · INT +3 · Refreshes on Short Rest</div>
+    <div class="powers-grid">
+
+      <div class="power-card">
+        <div class="power-name">Target Lock</div>
+        <div class="power-meta">
+          <span class="power-tag">Innate</span>
+          <span class="power-tag">Bonus Action</span>
+          <span class="power-tag">90ft</span>
+          <span class="power-tag">1 creature</span>
+          <span class="power-tag">1d6</span>
+        </div>
+        <div class="power-desc">Mark a target with a targeting lock. Deals 1d6 bonus damage and grants tracking data. Pairs perfectly with Ranger's Quarry — stack both on the same target for maximum single-target pressure.</div>
+      </div>
+
+      <div class="power-card">
+        <div class="power-name">Encrypted Message</div>
+        <div class="power-meta">
+          <span class="power-tag">At-Will</span>
+          <span class="power-tag">Action</span>
+          <span class="power-tag">120ft</span>
+          <span class="power-tag">No TP cost</span>
+        </div>
+        <div class="power-desc">Send a secure, undetectable message to any creature within 120ft. They can reply in kind. Invaluable for silent coordination mid-combat or covert communication during infiltration on Rakata Prime.</div>
+      </div>
+
+      <div class="power-card">
+        <div class="power-name">Combustive Shot</div>
+        <div class="power-meta">
+          <span class="power-tag">At-Will</span>
+          <span class="power-tag">Action</span>
+          <span class="power-tag">No TP cost</span>
+        </div>
+        <div class="power-desc">Enhance a blaster bolt to deal fire or explosive damage on hit. At-will — no resource cost. Use when you want to change damage type to bypass resistances or trigger environmental hazards.</div>
+      </div>
+
+      <div class="power-card">
+        <div class="power-name">Mending</div>
+        <div class="power-meta">
+          <span class="power-tag">At-Will</span>
+          <span class="power-tag">1 minute</span>
+          <span class="power-tag">Touch</span>
+          <span class="power-tag">No TP cost</span>
+        </div>
+        <div class="power-desc">Repair a single break or tear in an object or creature. Restores minor physical damage. Out-of-combat utility — patch gear, fix droids, seal breaches. Also works on yourself between encounters.</div>
+      </div>
+
+      <div class="power-card">
+        <div class="power-name">Tracer Bolt</div>
+        <div class="power-meta">
+          <span class="power-tag">1st Level</span>
+          <span class="power-tag">Action</span>
+          <span class="power-tag">120ft</span>
+          <span class="power-tag">Atk -1</span>
+          <span class="power-tag">4d6</span>
+          <span class="power-tag">1 TP</span>
+        </div>
+        <div class="power-desc">Fire a high-powered tracer round dealing 4d6 damage. Attack roll at -1 penalty. High damage ceiling — use on your marked quarry for a devastating burst turn. Best combined with Sharpshooter's Routine.</div>
+      </div>
+
+      <div class="power-card">
+        <div class="power-name">Distracting Blow</div>
+        <div class="power-meta">
+          <span class="power-tag">Mental</span>
+          <span class="power-tag">Superiority</span>
+          <span class="power-tag">Melee</span>
+        </div>
+        <div class="power-desc">A superiority-fueled strike that distracts the target, giving allies advantage on their next attack roll against it. Use to set up a teammate's big hit rather than dealing damage yourself.</div>
+      </div>
+
+      <div class="power-card">
+        <div class="power-name">Precision Attack</div>
+        <div class="power-meta">
+          <span class="power-tag">General</span>
+          <span class="power-tag">Superiority</span>
+        </div>
+        <div class="power-desc">Expend a superiority die to add it to an attack roll before or after the roll. Use when you really need a hit to land — save it for Tracer Bolt or your quarry-marked attack to guarantee damage on a key turn.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COMBOS -->
+  <div class="card">
+    <div class="card-header">Turn Combos</div>
+
+    <div class="combo-block">
+      <div class="combo-title">// STANDARD TURN — Quarry Strike</div>
+      <div class="combo-steps">
+        <span class="combo-step">Mark quarry (reaction)</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">Blaster Rifle attack</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">+1d6 quarry damage on hit</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">Stay at range</span>
+      </div>
+    </div>
+
+    <div class="combo-block">
+      <div class="combo-title">// BURST TURN — Tracer + Superiority Spike</div>
+      <div class="combo-steps">
+        <span class="combo-step">Mark quarry (reaction)</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">Tracer Bolt action (4d6, 1TP)</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">Sharpshooter's Routine BA (sup. die)</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">+1d6 quarry on each hit</span>
+      </div>
+    </div>
+
+    <div class="combo-block">
+      <div class="combo-title">// CRIT FISHING — Mark of the Deadeye</div>
+      <div class="combo-steps">
+        <span class="combo-step">Score a crit</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">Extra damage die (Sharpshooter)</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">Regain 1 sup. die (Mark)</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">Bonus attack again</span>
+      </div>
+    </div>
+
+    <div class="combo-block">
+      <div class="combo-title">// SURVIVAL TURN — Self Repair</div>
+      <div class="combo-steps">
+        <span class="combo-step">HP below 40%</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">Action: Rapid Reconstruction</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">Spend Hit Die, regain HP</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">Stay in the fight</span>
+      </div>
+    </div>
+
+    <div class="combo-block">
+      <div class="combo-title">// JUNGLE ADVANTAGE — Rakata Prime</div>
+      <div class="combo-steps">
+        <span class="combo-step">Enter dense terrain</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">Pathfinder: no speed loss</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">Enemies slowed behind you</span>
+        <span class="combo-arrow">→</span>
+        <span class="combo-step">Fire from cover freely</span>
+      </div>
+    </div>
+
+    <div class="fp-note">Tech Points refresh on SHORT rest &nbsp;·&nbsp; Superiority Dice (1/2) refresh on SHORT rest &nbsp;·&nbsp; Hit Dice refresh on LONG rest &nbsp;·&nbsp; AVOID ION DAMAGE</div>
+  </div>
+
+</div>
+
+<script>
+  const toggle = document.getElementById('themeToggle');
+  const icon   = document.getElementById('toggleIcon');
+  const label  = document.getElementById('toggleLabel');
+
+  const saved = localStorage.getItem('s1r3n-theme');
+  if (saved === 'light') {
+    document.body.classList.add('light');
+    icon.textContent  = '○';
+    label.textContent = 'LIGHT';
+  }
+
+  toggle.addEventListener('click', () => {
+    const isLight = document.body.classList.toggle('light');
+    icon.textContent  = isLight ? '○' : '◉';
+    label.textContent = isLight ? 'LIGHT' : 'DARK';
+    localStorage.setItem('s1r3n-theme', isLight ? 'light' : 'dark');
+  });
+</script>
+</body>
+</html>
